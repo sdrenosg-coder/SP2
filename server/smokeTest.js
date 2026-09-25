@@ -1,93 +1,55 @@
-import { execSync, spawn } from 'child_process';
-import { setTimeout as delay } from 'timers/promises';
+import { spawn } from 'node:child_process';
+import { setTimeout as delay } from 'node:timers/promises';
 
-const TEST_PORT = process.env.SMOKE_TEST_PORT || '3123';
-const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL;
-if (!TEST_DATABASE_URL) {
-  console.error('TEST_DATABASE_URL or DATABASE_URL must be set for smoke tests.');
+if (!process.env.DATABASE_URL) {
+  console.error('DATABASE_URL is required for the read-only smoke check.');
   process.exit(1);
 }
 
-execSync('node server/db/migrate.js', {
-  env: { ...process.env, DATABASE_URL: TEST_DATABASE_URL, NODE_ENV: 'test' },
-  stdio: 'inherit',
+const port = process.env.SMOKE_TEST_PORT || '3123';
+const base = `http://127.0.0.1:${port}`;
+const server = spawn(process.execPath, ['server/index.js'], {
+  env: { ...process.env, PORT: port, NODE_ENV: 'test' },
+  stdio: ['ignore', 'pipe', 'pipe'],
 });
 
-const serverProcess = spawn('node', ['server/index.js'], {
-  env: {
-    ...process.env,
-    PORT: TEST_PORT,
-    DATABASE_URL: TEST_DATABASE_URL,
-    NODE_ENV: 'test',
-    JWT_SECRET: 'test-secret',
-    STRIPE_SECRET_KEY: '',
-    STRIPE_WEBHOOK_SECRET: '',
-    SENDGRID_API_KEY: '',
-    TWILIO_ACCOUNT_SID: '',
-    TWILIO_AUTH_TOKEN: '',
-  },
-  stdio: 'pipe',
-});
+let output = '';
+server.stdout.on('data', data => { output += data.toString(); });
+server.stderr.on('data', data => { output += data.toString(); });
 
-let serverOutput = '';
-serverProcess.stdout.on('data', d => { serverOutput += d.toString(); });
-serverProcess.stderr.on('data', d => { serverOutput += d.toString(); });
-
-async function waitForServer(url, timeoutMs = 20000) {
-  const start = Date.now();
-  while (Date.now() - start < timeoutMs) {
+async function waitForServer() {
+  for (let attempt = 0; attempt < 40; attempt++) {
+    if (server.exitCode !== null) break;
     try {
-      const res = await fetch(url);
-      if (res.ok) return true;
-    } catch {}
-    await delay(500);
+      const response = await fetch(`${base}/`);
+      if (response.ok) return;
+    } catch {
+      // Wait for the process to bind its port.
+    }
+    await delay(250);
   }
-  throw new Error(`Server did not become ready. Output: ${serverOutput}`);
+  throw new Error(`Server did not start. ${output}`);
 }
 
-async function runChecks() {
-  const base = `http://localhost:${TEST_PORT}`;
-
-  const homeRes = await fetch(`${base}/`);
-  if (!homeRes.ok) throw new Error(`Home page returned ${homeRes.status}`);
-  const homeText = await homeRes.text();
-  if (!homeText.includes('Bookly')) throw new Error('Home page does not contain Bookly');
-
-  const demoRes = await fetch(`${base}/api/auth/demo-status`);
-  if (!demoRes.ok) throw new Error(`demo-status returned ${demoRes.status}`);
-  const demoData = await demoRes.json();
-
-  const testEmail = `smoke_${Date.now()}@test.com`;
-  const regRes = await fetch(`${base}/api/auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: testEmail, password: 'TestPass123', name: 'Smoke Test' }),
-  });
-  if (regRes.status !== 201) throw new Error(`Registration failed with ${regRes.status}: ${await regRes.text()}`);
-
-  const loginRes = await fetch(`${base}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: testEmail, password: 'TestPass123' }),
-  });
-  if (loginRes.status !== 200) throw new Error(`Login failed with ${loginRes.status}: ${await loginRes.text()}`);
-  const loginData = await loginRes.json();
-  if (!loginData.user || loginData.user.email !== testEmail) throw new Error('Login returned incorrect user');
-}
-
-async function main() {
-  try {
-    await waitForServer(`http://localhost:${TEST_PORT}/`);
-    await runChecks();
-    console.log('✅ Smoke checks passed');
-    serverProcess.kill('SIGTERM');
-    process.exit(0);
-  } catch (err) {
-    console.error('❌ Smoke checks failed:', err.message);
-    console.error('Server output:', serverOutput);
-    serverProcess.kill('SIGTERM');
-    process.exit(1);
+try {
+  await waitForServer();
+  const home = await fetch(`${base}/`);
+  if (!home.ok || !(await home.text()).includes('Bookly')) {
+    throw new Error('The application root did not respond as expected.');
   }
+  const anonymous = await fetch(`${base}/api/auth/me`);
+  if (anonymous.status !== 401) throw new Error(`Unauthenticated request returned ${anonymous.status}, expected 401.`);
+  const admin = await fetch(`${base}/api/admin/stats`);
+  if (admin.status !== 401) throw new Error(`Unauthenticated admin request returned ${admin.status}, expected 401.`);
+  const demo = await fetch(`${base}/api/auth/demo-status`);
+  if (!demo.ok || typeof (await demo.json()).available !== 'boolean') {
+    throw new Error('Demo availability endpoint did not return a valid response.');
+  }
+  console.log('Build and read-only API smoke checks passed.');
+} catch (error) {
+  console.error(error.message);
+  if (output) console.error(output);
+  process.exitCode = 1;
+} finally {
+  server.kill('SIGTERM');
 }
-
-main();

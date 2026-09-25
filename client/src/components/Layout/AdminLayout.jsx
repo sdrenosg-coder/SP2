@@ -1,4 +1,4 @@
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 
 const adminNavItems = [
@@ -9,6 +9,11 @@ const adminNavItems = [
 
 export default function AdminLayout() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   return (
     <div className="flex h-screen bg-surface">
@@ -34,7 +39,7 @@ export default function AdminLayout() {
         </nav>
         <div className="p-4 border-t border-white/10">
           <div className="text-sm text-gray-300">{user?.name}</div>
-          <button onClick={logout} className="text-red-400 hover:text-red-300 text-sm mt-2">Logout</button>
+          <button onClick={handleLogout} className="text-red-400 hover:text-red-300 text-sm mt-2">Logout</button>
         </div>
       </aside>
       <main className="flex-1 p-8 overflow-auto">

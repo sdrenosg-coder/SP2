@@ -6,7 +6,11 @@ async function request(method, url, data) {
   const res = await fetch(`${API_BASE}${url}`, options);
   const contentType = res.headers.get('content-type');
   const body = contentType?.includes('application/json') ? await res.json() : await res.text();
-  if (!res.ok) throw new Error(body.error || 'Request failed');
+  if (!res.ok) {
+    const error = new Error(body?.error || 'Request failed');
+    error.status = res.status;
+    throw error;
+  }
   return body;
 }
 

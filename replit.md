@@ -6,3 +6,4 @@
 - Stripe, SendGrid, and Twilio settings are optional; related real payment and messaging integrations require their own credentials before use.
 - For a production-style local run, run `npm run build` followed by `npm start`; this serves the built frontend from Express. The development workflow is the recommended Replit preview.
 - Run `npm run check` for a build and a read-only API startup check. Demo seeding is development-only.
+- Run `npm run admin:setup` in the terminal after migrating to create or reset a superadmin; it prints a one-time random password. Admins log in through `/login` and are directed to `/admin`. In production set `ADMIN_EMAIL` for this command. The admin plan selector is manual and does not charge customers.

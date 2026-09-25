@@ -2,9 +2,13 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { config } from '../config.js';
 
+export function getCredentialVersion(passwordHash) {
+  return crypto.createHmac('sha256', config.jwtSecret).update(passwordHash).digest('base64url');
+}
+
 export function generateAccessToken(user) {
   return jwt.sign(
-    { id: user.id, email: user.email },
+    { id: user.id, email: user.email, credentialVersion: getCredentialVersion(user.passwordHash) },
     config.jwtSecret,
     { expiresIn: '7d' },
   );

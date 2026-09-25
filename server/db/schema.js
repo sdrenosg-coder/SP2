@@ -6,6 +6,8 @@ export const users = pgTable('users', {
   passwordHash: text('password_hash').notNull(),
   name: text('name').notNull(),
   phone: text('phone'),
+  roleGlobal: text('role_global').notNull().default('user'),
+  isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
@@ -19,6 +21,7 @@ export const businesses = pgTable('businesses', {
   branding: jsonb('branding').default({}),
   policies: jsonb('policies').default({}),
   plan: text('plan').default('free'),
+  suspended: boolean('suspended').notNull().default(false),
   createdBy: integer('created_by').references(() => users.id),
   createdAt: timestamp('created_at').defaultNow(),
 });

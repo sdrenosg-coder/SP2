@@ -2,6 +2,11 @@ import { readFileSync } from 'fs';
 import bcrypt from 'bcryptjs';
 import { pool } from './index.js';
 
+if (process.env.NODE_ENV === 'production') {
+  await pool.end();
+  throw new Error('Demo data must not be seeded in production.');
+}
+
 const schemaSql = readFileSync(new URL('./schema.sql', import.meta.url), 'utf8');
 await pool.query(schemaSql);
 
@@ -112,16 +117,5 @@ if (existingDemo.rows.length === 0) {
   );
 }
 
-// Seed superadmin
-const existingAdmin = await pool.query(`SELECT id FROM users WHERE email = 'admin@bookly.demo'`);
-if (existingAdmin.rows.length === 0) {
-  const adminHash = await bcrypt.hash('admin123', 10);
-  await pool.query(
-    `INSERT INTO users (email, password_hash, name, phone, role_global) VALUES ('admin@bookly.demo', $1, 'Platform Admin', '555-0000', 'superadmin')`,
-    [adminHash],
-  );
-  console.log('Superadmin created: admin@bookly.demo / admin123');
-}
-
-console.log('Seed complete.');
+console.log('Seed complete. To create a superadmin, run npm run admin:setup.');
 await pool.end();

@@ -4,24 +4,27 @@ import Button from '../../components/ui/Button.jsx';
 
 export default function AdminUsers() {
   const queryClient = useQueryClient();
-  const { data: users } = useQuery({
+  const { data: users, error } = useQuery({
     queryKey: ['admin', 'users'],
     queryFn: async () => (await api.get('/admin/users')).users,
   });
 
   const updateRole = useMutation({
     mutationFn: async ({ id, role_global }) => api.patch(`/admin/users/${id}`, { role_global }),
-    onSuccess: () => queryClient.invalidateQueries(['admin', 'users']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'users'] }),
   });
 
   const toggleActive = useMutation({
     mutationFn: async ({ id, is_active }) => api.patch(`/admin/users/${id}`, { is_active }),
-    onSuccess: () => queryClient.invalidateQueries(['admin', 'users']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'users'] }),
   });
 
   return (
     <div>
       <h1 className="text-3xl font-bold text-dark mb-6">Users</h1>
+      {(error || updateRole.error || toggleActive.error) && (
+        <p role="alert" className="text-red-600 mb-4">{(error || updateRole.error || toggleActive.error).message}</p>
+      )}
       <div className="card overflow-x-auto p-0">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -40,7 +43,7 @@ export default function AdminUsers() {
                 <td className="px-4 py-3">{u.email}</td>
                 <td className="px-4 py-3">
                   <select
-                    value={u.role_global}
+                    value={u.roleGlobal}
                     onChange={e => updateRole.mutate({ id: u.id, role_global: e.target.value })}
                     className="input-field w-auto"
                   >
@@ -50,15 +53,15 @@ export default function AdminUsers() {
                   </select>
                 </td>
                 <td className="px-4 py-3">
-                  {u.is_active ? (
+                  {u.isActive ? (
                     <span className="text-green-600 font-medium">Active</span>
                   ) : (
                     <span className="text-red-600 font-medium">Deactivated</span>
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <Button variant="secondary" onClick={() => toggleActive.mutate({ id: u.id, is_active: !u.is_active })}>
-                    {u.is_active ? 'Deactivate' : 'Activate'}
+                  <Button variant="secondary" onClick={() => toggleActive.mutate({ id: u.id, is_active: !u.isActive })}>
+                    {u.isActive ? 'Deactivate' : 'Activate'}
                   </Button>
                 </td>
               </tr>

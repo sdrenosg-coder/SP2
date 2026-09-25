@@ -10,15 +10,30 @@ export function BusinessProvider({ children }) {
   const [role, setRole] = useState(null);
 
   useEffect(() => {
-    if (user) {
+    let cancelled = false;
+    if (user && user.roleGlobal !== 'superadmin') {
       api.get('/businesses/current')
-        .then(res => { setBusiness(res.data.business); setRole(res.data.role); })
-        .catch(() => { setBusiness(null); setRole(null); });
+        .then(res => {
+          if (!cancelled) { setBusiness(res.business); setRole(res.role); }
+        })
+        .catch(() => {
+          if (!cancelled) { setBusiness(null); setRole(null); }
+        });
+    } else {
+      setBusiness(null);
+      setRole(null);
     }
+    return () => { cancelled = true; };
   }, [user]);
 
+  const refreshBusiness = async () => {
+    const result = await api.get('/businesses/current');
+    setBusiness(result.business);
+    setRole(result.role);
+  };
+
   return (
-    <BusinessContext.Provider value={{ business, role }}>
+    <BusinessContext.Provider value={{ business, role, refreshBusiness }}>
       {children}
     </BusinessContext.Provider>
   );

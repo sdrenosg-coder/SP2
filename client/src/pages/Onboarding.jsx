@@ -3,6 +3,7 @@ import api from '../api/client.js';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/ui/Button.jsx';
 import Input from '../components/ui/Input.jsx';
+import { useBusiness } from '../context/BusinessContext.jsx';
 
 export default function Onboarding() {
   const [name, setName] = useState('');
@@ -11,10 +12,15 @@ export default function Onboarding() {
   const [timezone, setTimezone] = useState('America/New_York');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { refreshBusiness } = useBusiness();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try { await api.post('/businesses', { name, slug, category, timezone }); navigate('/dashboard'); } catch (err) { setError(err.message); }
+    try {
+      await api.post('/businesses', { name, slug, category, timezone });
+      await refreshBusiness();
+      navigate('/dashboard');
+    } catch (err) { setError(err.message); }
   };
 
   return (

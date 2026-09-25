@@ -1,9 +1,10 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 
-export default function ProtectedRoute() {
+export default function ProtectedRoute({ adminOnly = false }) {
   const { user, loading } = useAuth();
   if (loading) return <div>Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;
+  if (adminOnly && user.roleGlobal !== 'superadmin') return <Navigate to="/dashboard" replace />;
   return <Outlet />;
 }

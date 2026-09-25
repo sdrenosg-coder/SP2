@@ -1,17 +1,17 @@
 import express from 'express';
 import { db } from '../db/index.js';
 import { businesses, services } from '../db/schema.js';
-import { eq, ilike } from 'drizzle-orm';
+import { and, eq, ilike } from 'drizzle-orm';
 
 const router = express.Router();
 
 router.get('/search', async (req, res, next) => {
   try {
     const { q, category } = req.query;
-    let query = db.select().from(businesses).where(eq(businesses.suspended, false));
-    if (q) query = query.where(ilike(businesses.name, `%${q}%`));
-    if (category) query = query.where(eq(businesses.category, category));
-    const list = await query;
+    const filters = [eq(businesses.suspended, false)];
+    if (typeof q === 'string' && q.trim()) filters.push(ilike(businesses.name, `%${q.trim()}%`));
+    if (typeof category === 'string' && category.trim()) filters.push(eq(businesses.category, category.trim()));
+    const list = await db.select().from(businesses).where(and(...filters));
     res.json({ businesses: list });
   } catch (err) { next(err); }
 });

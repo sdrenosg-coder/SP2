@@ -10,26 +10,22 @@ export function AuthProvider({ children }) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const token = document.cookie.includes('token=');
-    if (token) {
-      api.get('/auth/me')
-        .then(res => setUser(res.data.user))
-        .catch(() => setUser(null))
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+    api.get('/auth/session')
+      .then(res => setUser(res.user))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
   }, []);
 
   const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
-    setUser(res.data.user);
+    setUser(res.user);
     queryClient.clear();
+    return res.user;
   };
 
   const signup = async (data) => {
     const res = await api.post('/auth/register', data);
-    setUser(res.data.user);
+    setUser(res.user);
     queryClient.clear();
   };
 
