@@ -5,15 +5,7 @@ import { DateTime } from 'luxon';
 import { sendBookingConfirmation } from './notificationService.js';
 import { getClientRiskScore } from './riskService.js';
 
-export async function createAppointment({
-  businessId,
-  clientId,
-  serviceId,
-  staffId,
-  startAt,
-  source = 'widget',
-  addOns = [],
-}) {
+export async function createAppointment({ businessId, clientId, serviceId, staffId, startAt, source = 'widget', addOns = [] }) {
   const business = await db.select().from(businesses).where(eq(businesses.id, businessId)).limit(1);
   if (!business.length) throw new Error('Business not found');
   const timezone = business[0].timezone;

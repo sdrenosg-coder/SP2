@@ -10,6 +10,7 @@ if (process.env.NODE_ENV === 'production') {
 const schemaSql = readFileSync(new URL('./schema.sql', import.meta.url), 'utf8');
 await pool.query(schemaSql);
 
+// Idempotent: exit if demo data already exists
 const existing = await pool.query(`SELECT id FROM users WHERE email = 'owner@bookly.demo'`);
 if (existing.rows.length > 0) {
   console.log('Demo data already exists. Skipping seed.');
@@ -122,6 +123,8 @@ async function seed() {
   );
 
   console.log('Seed complete. Demo credentials are for development only.');
+  console.log('  Email: owner@bookly.demo');
+  console.log('  Password: password123');
 }
 
 await seed();

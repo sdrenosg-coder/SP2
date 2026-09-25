@@ -48,6 +48,7 @@ router.get('/me', authRequired, async (req, res, next) => {
 
 router.post('/logout', (req, res) => res.clearCookie('token').json({ success: true }));
 
+// Public endpoint to check if demo data exists (no credentials exposed)
 router.get('/demo-status', async (req, res, next) => {
   try {
     const demoUser = await db.select().from(users).where(eq(users.email, 'owner@bookly.demo')).limit(1);
