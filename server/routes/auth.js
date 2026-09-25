@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import { db } from '../db/index.js';
-import { users } from '../db/schema.js';
+import { users, businesses } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { registerSchema, loginSchema } from '../utils/validation.js';
 import { generateAccessToken } from '../utils/tokens.js';
@@ -41,10 +41,19 @@ router.get('/me', authRequired, async (req, res, next) => {
   try {
     const userRows = await db.select().from(users).where(eq(users.id, req.user.id)).limit(1);
     if (!userRows.length) return res.status(404).json({ error: 'User not found' });
-    res.json({ user: userRows[0] });
+    const { id, email, name, phone } = userRows[0];
+    res.json({ user: { id, email, name, phone } });
   } catch (err) { next(err); }
 });
 
 router.post('/logout', (req, res) => res.clearCookie('token').json({ success: true }));
+
+router.get('/demo-status', async (req, res, next) => {
+  try {
+    const demoUser = await db.select().from(users).where(eq(users.email, 'owner@bookly.demo')).limit(1);
+    const demoBusiness = await db.select().from(businesses).where(eq(businesses.slug, 'glow-studio')).limit(1);
+    res.json({ available: demoUser.length > 0 && demoBusiness.length > 0 });
+  } catch (err) { next(err); }
+});
 
 export default router;

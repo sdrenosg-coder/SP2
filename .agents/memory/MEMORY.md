@@ -1,1 +1,2 @@
 - [Imported-project preflight](imported-project-preflight.md) — generated README warnings may be stale; verify live files and startup behavior before applying their suggested fixes.
+- [GitHub update reconciliation](github-update-reconciliation.md) — upstream Zipy updates can omit Replit setup; retain working environment configuration when adopting changes.

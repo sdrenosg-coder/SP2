@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS businesses (
   category TEXT DEFAULT 'Beauty & Wellness',
   timezone TEXT DEFAULT 'UTC',
   currency TEXT DEFAULT 'USD',
-  branding JSONB DEFAULT '{"primary_color":"#7c3aed","logo_url":null}',
+  branding JSONB DEFAULT '{"primary_color":"#6D28D9","logo_url":null}',
   policies JSONB DEFAULT '{"cancellation_hours":24,"no_show_fee":0,"deposit_percent":0}',
   plan TEXT DEFAULT 'free',
   created_by INTEGER REFERENCES users(id),
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS staff (
   user_id INTEGER REFERENCES users(id),
   name TEXT NOT NULL,
   title TEXT,
-  color TEXT DEFAULT '#7c3aed',
+  color TEXT DEFAULT '#6D28D9',
   is_active BOOLEAN DEFAULT true,
   commission_rate NUMERIC(5,2) DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT now()

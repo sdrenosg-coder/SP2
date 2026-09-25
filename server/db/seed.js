@@ -2,8 +2,20 @@ import { readFileSync } from 'fs';
 import bcrypt from 'bcryptjs';
 import { pool } from './index.js';
 
+if (process.env.NODE_ENV === 'production') {
+  await pool.end();
+  throw new Error('Demo data must not be seeded in production.');
+}
+
 const schemaSql = readFileSync(new URL('./schema.sql', import.meta.url), 'utf8');
 await pool.query(schemaSql);
+
+const existing = await pool.query(`SELECT id FROM users WHERE email = 'owner@bookly.demo'`);
+if (existing.rows.length > 0) {
+  console.log('Demo data already exists. Skipping seed.');
+  await pool.end();
+  process.exit(0);
+}
 
 async function seed() {
   const passwordHash = await bcrypt.hash('password123', 10);
@@ -95,14 +107,12 @@ async function seed() {
     ['John', 'Doe', 'john@example.com', '555-1002', '', '[]', 'None', 1, 50],
     ['Emily', 'Clark', 'emily@example.com', '555-1003', 'Allergic to nail polish', '[]', 'Nail polish', 0, 0],
   ];
-  const clientIds = [];
   for (const [first, last, email, phone, notes, tags, allergies, noShow, points] of clientData) {
-    const r = await pool.query(
+    await pool.query(
       `INSERT INTO clients (business_id, first_name, last_name, email, phone, notes, tags, allergies, no_show_count, loyalty_points)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [businessId, first, last, email, phone, notes, tags, allergies, noShow, points],
     );
-    clientIds.push(r.rows[0].id);
   }
 
   await pool.query(
@@ -111,7 +121,7 @@ async function seed() {
     [businessId, 'Weekday Morning -15%', JSON.stringify([1,2,3,4,5]), '09:00', '12:00', 15, JSON.stringify(serviceIds)],
   );
 
-  console.log('Seed complete. Demo login: owner@bookly.demo / password123');
+  console.log('Seed complete. Demo credentials are for development only.');
 }
 
 await seed();

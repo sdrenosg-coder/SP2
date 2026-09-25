@@ -5,3 +5,4 @@
 - Authentication signing uses `JWT_SECRET` if supplied, otherwise the workspace `SESSION_SECRET`. Do not put secrets in `.env` or commit them.
 - Stripe, SendGrid, and Twilio settings are optional; related real payment and messaging integrations require their own credentials before use.
 - For a production-style local run, run `npm run build` followed by `npm start`; this serves the built frontend from Express. The development workflow is the recommended Replit preview.
+- Run `npm run check` for a build and a read-only API startup check. Demo seeding is development-only.
