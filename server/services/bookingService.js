@@ -8,6 +8,7 @@ import { getClientRiskScore } from './riskService.js';
 export async function createAppointment({ businessId, clientId, serviceId, staffId, startAt, source = 'widget', addOns = [] }) {
   const business = await db.select().from(businesses).where(eq(businesses.id, businessId)).limit(1);
   if (!business.length) throw new Error('Business not found');
+  if (business[0].suspended) throw new Error('Business is suspended');
   const timezone = business[0].timezone;
 
   const clientRecord = await db.select().from(clients).where(and(eq(clients.id, clientId), eq(clients.businessId, businessId))).limit(1);

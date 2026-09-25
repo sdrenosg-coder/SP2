@@ -1,3 +1,4 @@
+// server/index.js (modified – mount chainBooking routes)
 import express from 'express';
 import http from 'http';
 import cookieParser from 'cookie-parser';
@@ -27,6 +28,7 @@ import queueRoutes from './routes/queue.js';
 import marketplaceRoutes from './routes/marketplace.js';
 import widgetRoutes from './routes/widget.js';
 import adminRoutes from './routes/admin.js';
+import chainBookingRoutes from './routes/chainBooking.js';
 import { errorHandler } from './middleware/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -63,6 +65,7 @@ app.use('/api/queue', queueRoutes);
 app.use('/api/marketplace', marketplaceRoutes);
 app.use('/api/widget', widgetRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/chain-booking', chainBookingRoutes);
 
 if (config.isProduction) {
   const clientDist = path.resolve(__dirname, '../client/dist');

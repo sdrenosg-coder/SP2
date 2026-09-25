@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/search', async (req, res, next) => {
   try {
     const { q, category } = req.query;
-    let query = db.select().from(businesses);
+    let query = db.select().from(businesses).where(eq(businesses.suspended, false));
     if (q) query = query.where(ilike(businesses.name, `%${q}%`));
     if (category) query = query.where(eq(businesses.category, category));
     const list = await query;
@@ -20,6 +20,7 @@ router.get('/:slug', async (req, res, next) => {
   try {
     const biz = await db.select().from(businesses).where(eq(businesses.slug, req.params.slug)).limit(1);
     if (!biz.length) return res.status(404).json({ error: 'Business not found' });
+    if (biz[0].suspended) return res.status(403).json({ error: 'Business suspended' });
     const serviceList = await db.select().from(services).where(eq(services.businessId, biz[0].id));
     res.json({ business: biz[0], services: serviceList });
   } catch (err) { next(err); }

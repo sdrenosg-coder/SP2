@@ -43,6 +43,7 @@ router.get('/slug/:slug', async (req, res, next) => {
   try {
     const biz = await db.select().from(businesses).where(eq(businesses.slug, req.params.slug)).limit(1);
     if (!biz.length) return res.status(404).json({ error: 'Business not found' });
+    if (biz[0].suspended) return res.status(403).json({ error: 'Business suspended' });
     res.json({ business: biz[0] });
   } catch (err) { next(err); }
 });

@@ -29,6 +29,7 @@ router.post('/login', async (req, res, next) => {
     const userRows = await db.select().from(users).where(eq(users.email, data.email)).limit(1);
     if (!userRows.length) return res.status(401).json({ error: 'Invalid credentials' });
     const user = userRows[0];
+    if (!user.is_active) return res.status(401).json({ error: 'Account deactivated' });
     const valid = await bcrypt.compare(data.password, user.passwordHash);
     if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
     const token = generateAccessToken(user);
@@ -41,15 +42,13 @@ router.get('/me', authRequired, async (req, res, next) => {
   try {
     const userRows = await db.select().from(users).where(eq(users.id, req.user.id)).limit(1);
     if (!userRows.length) return res.status(404).json({ error: 'User not found' });
-    const { id, email, name, phone } = userRows[0];
-    res.json({ user: { id, email, name, phone } });
+    res.json({ user: userRows[0] });
   } catch (err) { next(err); }
 });
 
 router.post('/logout', (req, res) => res.clearCookie('token').json({ success: true }));
 
-// Public endpoint to check if demo data exists (no credentials exposed)
-router.get('/demo-status', async (req, res, next) => {
+router.get('/demo-status', async (req, res) => {
   try {
     const demoUser = await db.select().from(users).where(eq(users.email, 'owner@bookly.demo')).limit(1);
     const demoBusiness = await db.select().from(businesses).where(eq(businesses.slug, 'glow-studio')).limit(1);

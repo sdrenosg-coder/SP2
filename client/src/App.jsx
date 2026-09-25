@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { BusinessProvider } from './context/BusinessContext.jsx';
 import Layout from './components/Layout/Layout.jsx';
+import AdminLayout from './components/Layout/AdminLayout.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Landing from './pages/Landing.jsx';
 import Login from './pages/Login.jsx';
@@ -19,6 +20,9 @@ import ReportsPage from './pages/ReportsPage.jsx';
 import MarketplacePage from './pages/MarketplacePage.jsx';
 import CustomerPortal from './pages/CustomerPortal.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
+import AdminDashboard from './pages/admin/AdminDashboard.jsx';
+import AdminBusinesses from './pages/admin/AdminBusinesses.jsx';
+import AdminUsers from './pages/admin/AdminUsers.jsx';
 
 export default function App() {
   return (
@@ -43,6 +47,14 @@ export default function App() {
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/my-bookings" element={<CustomerPortal />} />
+            </Route>
+          </Route>
+          {/* Admin routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="businesses" element={<AdminBusinesses />} />
+              <Route path="users" element={<AdminUsers />} />
             </Route>
           </Route>
         </Routes>

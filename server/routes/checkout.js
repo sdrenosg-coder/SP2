@@ -1,6 +1,6 @@
 import express from 'express';
 import { db } from '../db/index.js';
-import { payments, invoices, invoiceLines, appointments, clients } from '../db/schema.js';
+import { payments, invoices, invoiceLines, appointments, clients, appointmentItems } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { authRequired, resolveBusinessFromUser, requireRole } from '../middleware/index.js';
 import { awardPoints } from '../services/loyaltyService.js';

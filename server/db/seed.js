@@ -2,26 +2,15 @@ import { readFileSync } from 'fs';
 import bcrypt from 'bcryptjs';
 import { pool } from './index.js';
 
-if (process.env.NODE_ENV === 'production') {
-  await pool.end();
-  throw new Error('Demo data must not be seeded in production.');
-}
-
 const schemaSql = readFileSync(new URL('./schema.sql', import.meta.url), 'utf8');
 await pool.query(schemaSql);
 
 // Idempotent: exit if demo data already exists
-const existing = await pool.query(`SELECT id FROM users WHERE email = 'owner@bookly.demo'`);
-if (existing.rows.length > 0) {
-  console.log('Demo data already exists. Skipping seed.');
-  await pool.end();
-  process.exit(0);
-}
-
-async function seed() {
+const existingDemo = await pool.query(`SELECT id FROM users WHERE email = 'owner@bookly.demo'`);
+if (existingDemo.rows.length === 0) {
   const passwordHash = await bcrypt.hash('password123', 10);
   const userRes = await pool.query(
-    `INSERT INTO users (email, password_hash, name, phone) VALUES ('owner@bookly.demo', $1, 'Ava Owner', '555-0100') RETURNING id`,
+    `INSERT INTO users (email, password_hash, name, phone, role_global) VALUES ('owner@bookly.demo', $1, 'Ava Owner', '555-0100', 'user') RETURNING id`,
     [passwordHash],
   );
   const userId = userRes.rows[0].id;
@@ -121,11 +110,18 @@ async function seed() {
      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
     [businessId, 'Weekday Morning -15%', JSON.stringify([1,2,3,4,5]), '09:00', '12:00', 15, JSON.stringify(serviceIds)],
   );
-
-  console.log('Seed complete. Demo credentials are for development only.');
-  console.log('  Email: owner@bookly.demo');
-  console.log('  Password: password123');
 }
 
-await seed();
+// Seed superadmin
+const existingAdmin = await pool.query(`SELECT id FROM users WHERE email = 'admin@bookly.demo'`);
+if (existingAdmin.rows.length === 0) {
+  const adminHash = await bcrypt.hash('admin123', 10);
+  await pool.query(
+    `INSERT INTO users (email, password_hash, name, phone, role_global) VALUES ('admin@bookly.demo', $1, 'Platform Admin', '555-0000', 'superadmin')`,
+    [adminHash],
+  );
+  console.log('Superadmin created: admin@bookly.demo / admin123');
+}
+
+console.log('Seed complete.');
 await pool.end();

@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   name TEXT NOT NULL,
   phone TEXT,
+  role_global TEXT NOT NULL DEFAULT 'user',
+  is_active BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -20,6 +22,7 @@ CREATE TABLE IF NOT EXISTS businesses (
   branding JSONB DEFAULT '{"primary_color":"#6D28D9","logo_url":null}',
   policies JSONB DEFAULT '{"cancellation_hours":24,"no_show_fee":0,"deposit_percent":0}',
   plan TEXT DEFAULT 'free',
+  suspended BOOLEAN DEFAULT false,
   created_by INTEGER REFERENCES users(id),
   created_at TIMESTAMPTZ DEFAULT now()
 );
