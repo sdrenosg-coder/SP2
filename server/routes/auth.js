@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import { db } from '../db/index.js';
-import { users } from '../db/schema.js';
+import { users, businesses } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { registerSchema, loginSchema } from '../utils/validation.js';
 import { generateAccessToken } from '../utils/tokens.js';
@@ -46,5 +46,14 @@ router.get('/me', authRequired, async (req, res, next) => {
 });
 
 router.post('/logout', (req, res) => res.clearCookie('token').json({ success: true }));
+
+// Public endpoint to check if demo data exists (no credentials exposed)
+router.get('/demo-status', async (req, res, next) => {
+  try {
+    const demoUser = await db.select().from(users).where(eq(users.email, 'owner@bookly.demo')).limit(1);
+    const demoBusiness = await db.select().from(businesses).where(eq(businesses.slug, 'glow-studio')).limit(1);
+    res.json({ available: demoUser.length > 0 && demoBusiness.length > 0 });
+  } catch (err) { next(err); }
+});
 
 export default router;
