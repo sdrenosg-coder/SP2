@@ -1,0 +1,4 @@
+npm run cleanup                               # review report (dry run)
+node scripts/cleanup.js --apply               # delete strays + identical -2 copies
+npm run db:migrate && npm test
+npm run build && npm start                    # serves on $PORT, 0.0.0.0

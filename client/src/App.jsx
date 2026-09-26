@@ -1,64 +1,65 @@
-import { Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext.jsx';
-import { BusinessProvider } from './context/BusinessContext.jsx';
-import Layout from './components/Layout/Layout.jsx';
-import AdminLayout from './components/Layout/AdminLayout.jsx';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+
 import Landing from './pages/Landing.jsx';
 import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
 import Onboarding from './pages/Onboarding.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import CalendarPage from './pages/CalendarPage.jsx';
-import BookingWizard from './pages/BookingWizard.jsx';
 import ClientCRM from './pages/ClientCRM.jsx';
-import StaffPage from './pages/StaffPage.jsx';
 import ServicesPage from './pages/ServicesPage.jsx';
-import CheckoutPage from './pages/CheckoutPage.jsx';
+import StaffPage from './pages/StaffPage.jsx';
 import PricingRulesPage from './pages/PricingRulesPage.jsx';
 import ReportsPage from './pages/ReportsPage.jsx';
-import MarketplacePage from './pages/MarketplacePage.jsx';
-import CustomerPortal from './pages/CustomerPortal.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
+import BookingWizard from './pages/BookingWizard.jsx';
+import CheckoutPage from './pages/CheckoutPage.jsx';
+import CustomerPortal from './pages/CustomerPortal.jsx';
+import MarketplacePage from './pages/MarketplacePage.jsx';
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 import AdminBusinesses from './pages/admin/AdminBusinesses.jsx';
 import AdminUsers from './pages/admin/AdminUsers.jsx';
 
+import ManageBookingPage from './pages/ManageBookingPage.jsx';
+import GiftCardsPage from './pages/GiftCardsPage.jsx';
+import AuditLogPage from './pages/AuditLogPage.jsx';
+
+const guard = (el) => <ProtectedRoute>{el}</ProtectedRoute>;
+
 export default function App() {
   return (
-    <AuthProvider>
-      <BusinessProvider>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/b/:slug" element={<BookingWizard />} />
-          <Route path="/marketplace" element={<MarketplacePage />} />
-          <Route element={<ProtectedRoute />}>
-            <Route element={<Layout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/calendar" element={<CalendarPage />} />
-              <Route path="/clients" element={<ClientCRM />} />
-              <Route path="/staff" element={<StaffPage />} />
-              <Route path="/services" element={<ServicesPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/pricing" element={<PricingRulesPage />} />
-              <Route path="/reports" element={<ReportsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/my-bookings" element={<CustomerPortal />} />
-            </Route>
-          </Route>
-          {/* Admin routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="businesses" element={<AdminBusinesses />} />
-              <Route path="users" element={<AdminUsers />} />
-            </Route>
-          </Route>
-        </Routes>
-      </BusinessProvider>
-    </AuthProvider>
+    <Routes>
+      {/* Public */}
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/marketplace" element={<MarketplacePage />} />
+      <Route path="/book/:slug" element={<BookingWizard />} />
+      <Route path="/checkout/:appointmentId" element={<CheckoutPage />} />
+      <Route path="/portal" element={<CustomerPortal />} />
+      <Route path="/manage/:token" element={<ManageBookingPage />} />
+
+      {/* Business (authenticated) */}
+      <Route path="/onboarding" element={guard(<Onboarding />)} />
+      <Route path="/dashboard" element={guard(<Dashboard />)} />
+      <Route path="/calendar" element={guard(<CalendarPage />)} />
+      <Route path="/clients" element={guard(<ClientCRM />)} />
+      <Route path="/services" element={guard(<ServicesPage />)} />
+      <Route path="/staff" element={guard(<StaffPage />)} />
+      <Route path="/pricing-rules" element={guard(<PricingRulesPage />)} />
+      <Route path="/reports" element={guard(<ReportsPage />)} />
+      <Route path="/settings" element={guard(<SettingsPage />)} />
+      <Route path="/gift-cards" element={guard(<GiftCardsPage />)} />
+      <Route path="/audit-log" element={guard(<AuditLogPage />)} />
+      <Route path="/audit" element={<Navigate to="/audit-log" replace />} />
+
+      {/* Platform admin */}
+      <Route path="/admin" element={guard(<AdminDashboard />)} />
+      <Route path="/admin/businesses" element={guard(<AdminBusinesses />)} />
+      <Route path="/admin/users" element={guard(<AdminUsers />)} />
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }

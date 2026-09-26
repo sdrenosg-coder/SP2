@@ -12,6 +12,8 @@
     "start": "NODE_ENV=production node server/index.js",
     "db:migrate": "node server/db/migrate.js",
     "db:seed": "node server/db/seed.js",
+    "test": "node --test server/test",
+    "cleanup": "node scripts/cleanup.js",
     "check": "npm run build && node server/smokeTest.js"
   },
   "dependencies": {
@@ -27,6 +29,7 @@
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.16",
     "pg": "^8.12.0",
+    "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",

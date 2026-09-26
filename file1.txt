@@ -1,0 +1,1 @@
+   psql $DATABASE_URL -f server/db/migrations/003_growth_features.sql
