@@ -151,6 +151,10 @@ export const appointments = pgTable('appointments', {
   status: text('status').notNull().default('booked'),
   source: text('source').default('widget'),
   groupId: uuid('group_id'),
+  depositAmount: numeric('deposit_amount').default('0'),
+  depositStatus: text('deposit_status').default('none'),
+  noShowFee: numeric('no_show_fee').default('0'),
+  rescheduleCount: integer('reschedule_count').notNull().default(0),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
@@ -216,8 +220,41 @@ export const giftCards = pgTable('gift_cards', {
   balance: numeric('balance').notNull(),
   initialBalance: numeric('initial_balance').notNull(),
   clientId: integer('client_id').references(() => clients.id, { onDelete: 'set null' }),
+  purchaserEmail: text('purchaser_email'),
+  recipientEmail: text('recipient_email'),
   expiresAt: timestamp('expires_at'),
   status: text('status').default('active'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const giftCardTransactions = pgTable('gift_card_transactions', {
+  id: serial('id').primaryKey(),
+  giftCardId: integer('gift_card_id').notNull().references(() => giftCards.id, { onDelete: 'cascade' }),
+  appointmentId: integer('appointment_id').references(() => appointments.id, { onDelete: 'set null' }),
+  amount: numeric('amount').notNull(),
+  type: text('type').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const auditLogs = pgTable('audit_logs', {
+  id: serial('id').primaryKey(),
+  businessId: integer('business_id').references(() => businesses.id, { onDelete: 'cascade' }),
+  actor: text('actor'),
+  action: text('action').notNull(),
+  entity: text('entity'),
+  entityId: text('entity_id'),
+  meta: jsonb('meta').default({}),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const appointmentManageTokens = pgTable('appointment_manage_tokens', {
+  id: serial('id').primaryKey(),
+  tokenHash: text('token_hash').notNull().unique(),
+  appointmentId: integer('appointment_id').notNull().references(() => appointments.id, { onDelete: 'cascade' }),
+  businessId: integer('business_id').notNull().references(() => businesses.id, { onDelete: 'cascade' }),
+  expiresAt: timestamp('expires_at').notNull(),
+  usedAt: timestamp('used_at'),
+  createdAt: timestamp('created_at').defaultNow(),
 });
 
 export const memberships = pgTable('memberships', {

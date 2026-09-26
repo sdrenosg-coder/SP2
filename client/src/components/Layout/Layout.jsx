@@ -13,6 +13,8 @@ const navItems = [
   { to: '/checkout', label: 'Checkout' },
   { to: '/pricing', label: 'Pricing' },
   { to: '/reports', label: 'Reports' },
+  { to: '/gift-cards', label: 'Gift Cards' },
+  { to: '/audit-log', label: 'Audit Log' },
   { to: '/settings', label: 'Settings' },
 ];
 

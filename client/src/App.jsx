@@ -23,6 +23,9 @@ import SettingsPage from './pages/SettingsPage.jsx';
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 import AdminBusinesses from './pages/admin/AdminBusinesses.jsx';
 import AdminUsers from './pages/admin/AdminUsers.jsx';
+import GiftCardsPage from './pages/GiftCardsPage.jsx';
+import AuditLogPage from './pages/AuditLogPage.jsx';
+import ManageBookingPage from './pages/ManageBookingPage.jsx';
 
 export default function App() {
   return (
@@ -35,6 +38,7 @@ export default function App() {
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/b/:slug" element={<BookingWizard />} />
           <Route path="/marketplace" element={<MarketplacePage />} />
+          <Route path="/manage/:token" element={<ManageBookingPage />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
               <Route path="/dashboard" element={<Dashboard />} />
@@ -47,6 +51,8 @@ export default function App() {
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/my-bookings" element={<CustomerPortal />} />
+              <Route path="/gift-cards" element={<GiftCardsPage />} />
+              <Route path="/audit-log" element={<AuditLogPage />} />
             </Route>
           </Route>
           {/* Admin routes */}
